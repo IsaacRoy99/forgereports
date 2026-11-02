@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Admin Dashboard - Forge Academy</title>
+    <title>FORGE REPORTS | Administrator</title>
 
     <link rel="icon"
           type="image/png"
@@ -45,15 +45,8 @@
                  class="me-3">
 
             <div>
-
-                <h4 class="mb-0">
-                    Reporting System
-                </h4>
-
-                <small class="text-white-50">
-                    Administrator Dashboard
-                </small>
-
+                <h4 class="mb-0">FORGE <span class="brand-reports-small">REPORTS</span></h4>
+                <small class="text-white-50">Administrator Dashboard</small>
             </div>
 
         </div>
@@ -527,7 +520,7 @@ function renderReports(reports) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="btn btn-sm btn-outline-primary">
-                                    <i class="fa-solid fa-file-pdf me-1"></i> View PDF
+                                    <i class="fa-solid fa-file-pdf me-1"></i> View Attachment
                             </a>`
                             : '<span class="text-muted">No attachment</span>'
                     }
@@ -535,7 +528,7 @@ function renderReports(reports) {
 
 
                 <td>
-
+                    <button class="btn btn-sm btn-outline-dark me-1" onclick="viewAdminReport(${Number(report.id)})" title="View report details"><i class="fa-regular fa-eye"></i></button>
                     ${
                         report.reviewStatus === "Pending"
 
@@ -587,6 +580,32 @@ function renderReports(reports) {
     });
 }
 
+
+// ======================================================
+// REPORT DETAILS
+// ======================================================
+
+function viewAdminReport(id) {
+    const report = allReports.find(item => Number(item.id) === Number(id));
+    if (!report) return;
+    const attachment = report.attachmentFilePath
+        ? `<p><strong>Attachment:</strong> <a href="${API_URL}/uploads/${encodeURIComponent(report.attachmentFilePath)}" target="_blank" rel="noopener noreferrer">${escapeHtml(report.attachmentFileName || "Open attachment")}</a></p>`
+        : "<p><strong>Attachment:</strong> None</p>";
+    Swal.fire({
+        title: escapeHtml(report.projectTitle), width: 760, confirmButtonColor: "#f47721",
+        html: `<div class="text-start report-detail-modal">
+          <p><strong>Department:</strong> ${escapeHtml(report.department)} | <strong>Site:</strong> ${escapeHtml(report.site)}</p>
+          <p><strong>Submitted by:</strong> ${escapeHtml(report.submittedBy)}</p>
+          <p><strong>Project status:</strong> ${escapeHtml(report.projectStatus)} | <strong>Importance:</strong> ${escapeHtml(report.importance)}</p>
+          <p><strong>Review status:</strong> ${escapeHtml(report.reviewStatus)}</p><hr>
+          <p><strong>Summary</strong><br>${escapeHtml(report.projectSummary)}</p>
+          <p><strong>Challenges</strong><br>${escapeHtml(report.challenges)}</p>
+          <p><strong>Progress update / next steps</strong><br>${escapeHtml(report.nextSteps)}</p>
+          ${report.adminFeedback ? `<div class="alert alert-warning"><strong>Reviewer feedback</strong><br>${escapeHtml(report.adminFeedback)}</div>` : ""}
+          ${attachment}
+        </div>`
+    });
+}
 
 // ======================================================
 // REVIEW REPORT

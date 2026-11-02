@@ -153,70 +153,6 @@ a:hover {
     background: var(--forge-orange);
 }
 
-/* Sidebar */
-.sidebar {
-    min-height: 100vh;
-    padding: 28px 18px !important;
-    background: #fff;
-    border-right: 1px solid var(--forge-border);
-}
-
-.sidebar h5 {
-    margin: 28px 10px 14px !important;
-    color: #90949b;
-    font-size: .72rem;
-    font-weight: 800;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-}
-
-.nav-btn {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 10px;
-    margin-bottom: 7px;
-    padding: 13px 15px;
-    border: 1px solid transparent;
-    border-radius: 11px;
-    background: transparent;
-    color: #565c65;
-    text-align: left;
-    font-size: .91rem;
-    font-weight: 650;
-    transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
-}
-
-.nav-btn i {
-    width: 22px;
-    color: #858b94;
-    font-size: 1rem;
-    text-align: center;
-    transition: color .18s ease;
-}
-
-.nav-btn:hover {
-    transform: translateX(2px);
-    background: #fff3e9;
-    color: var(--forge-ink);
-}
-
-.nav-btn:hover i {
-    color: var(--forge-orange-dark);
-}
-
-.active-btn,
-.active-btn:hover {
-    background: var(--forge-orange);
-    color: #fff;
-    box-shadow: 0 7px 18px rgba(244, 119, 33, .2);
-}
-
-.active-btn i,
-.active-btn:hover i {
-    color: #fff;
-}
-
 /* Content surfaces and report cards */
 .container-fluid {
     --bs-gutter-x: 1.75rem;
@@ -506,23 +442,6 @@ footer {
 
 /* Responsive adjustments */
 @media (max-width: 991.98px) {
-    .sidebar {
-        min-height: auto;
-        border-right: 0;
-        border-bottom: 1px solid var(--forge-border);
-    }
-
-    .sidebar .nav-btn {
-        display: inline-flex;
-        width: auto;
-        margin-right: 5px;
-        padding: 10px 13px;
-    }
-
-    .sidebar h5 {
-        margin-top: 16px !important;
-    }
-
     .hero-section {
         min-height: 300px;
         padding: 48px 28px;
@@ -583,3 +502,31 @@ footer {
         animation-iteration-count: 1 !important;
     }
 }
+
+
+/* FORGE REPORTS wordmark and dashboard navigation polish */
+.brand-reports {
+    display: inline-block;
+    padding: 7px 12px;
+    border-left: 4px solid var(--forge-orange);
+    color: var(--forge-orange);
+    font-size: clamp(1rem, 2vw, 1.45rem);
+    font-weight: 850;
+    letter-spacing: .22em;
+}
+.brand-reports-small { color: var(--forge-orange); letter-spacing: .12em; font-weight: 850; }
+.brand-lockup { display: flex; align-items: center; gap: 12px; color: #fff; font-size: .85rem; font-weight: 800; letter-spacing: .1em; }
+.brand-lockup strong { color: var(--forge-orange); }
+.report-detail-modal p { margin-bottom: .8rem; white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 991px) {
+  .brand-lockup img { max-height: 48px; }
+}
+@media (max-width: 575px) {
+  #searchInput { width: 55% !important; }
+  .hero-section { padding: 38px 20px; }
+}
+
+/* Dashboard report creation controls */
+#addReportButton { white-space: nowrap; box-shadow: 0 7px 18px rgba(244, 119, 33, .18); }
+#reportFormCard { scroll-margin-top: 24px; }
+#reportsCard { scroll-margin-top: 24px; }

@@ -57,3 +57,11 @@ CURRENT SCOPE / LIMITATIONS
 - Passwords are intentionally not validated in this demo build, matching the source project's current API behavior. The browser-side role checks are not a security boundary and API routes are not fully authorized. This remains a demonstration build only.
 - Existing reports from the old SQL Server database are not automatically copied. The Netlify database contains its own seeded departments and users; new demo reports are saved there.
 - The files have been syntax-checked locally. This does not replace testing the deployed API, database and attachment storage after GitHub deploys the update.
+
+
+DASHBOARD UPDATE (v4)
+- Removed the left navigation and Workflows sidebar from the department dashboard.
+- Added an Add Report button to open the report form on demand.
+- The report form now starts hidden and can be closed or cancelled.
+- The reports table remains on the dashboard with search, view details, and rejected-report resubmission.
+- Existing API routes and database setup are unchanged.
