@@ -160,13 +160,11 @@ if (reportForm) {
         const team = document.getElementById("team").value.trim();
         const status = document.getElementById("status").value.trim();
 
-        const textareas = document.querySelectorAll("#reportForm textarea");
+        const summary = document.getElementById("reportSummary")?.value.trim() || "";
+        const challenges = document.getElementById("reportChallenges")?.value.trim() || "";
+        const progress = document.getElementById("reportProgress")?.value.trim() || "";
 
-        const summary = textareas[0]?.value.trim() || "";
-        const challenges = textareas[1]?.value.trim() || "";
-        const progress = textareas[2]?.value.trim() || "";
-
-        const dateInput = document.querySelector("#reportForm input[type='date']");
+        const dateInput = document.getElementById("reportDate");
 
         const dueDate =
             dateInput?.value ||
@@ -382,119 +380,133 @@ if (attachmentFile) {
 }
 
 // ======================================================
+// DASHBOARD NAVIGATION AND REPORT VIEWS
+// ======================================================
+
+let cachedUserReports = [];
+let activeReportView = "dashboard";
+
+function setReportView(view) {
+    activeReportView = view;
+    document.querySelectorAll(".sidebar .nav-btn[data-view]").forEach(button => {
+        button.classList.toggle("active-btn", button.dataset.view === view);
+    });
+
+    const titles = {
+        dashboard: "Recent Reports",
+        my: "My Reports",
+        sent: "Sent Reports",
+        all: "All Reports",
+        pending: "Pending Reviews"
+    };
+    const heading = document.getElementById("reportsHeading");
+    if (heading) heading.textContent = titles[view] || "Reports";
+
+    const formCard = document.getElementById("reportFormCard");
+    const welcome = document.querySelector(".main-welcome");
+    if (formCard) formCard.classList.toggle("d-none", view !== "dashboard");
+    if (welcome) welcome.classList.toggle("d-none", view !== "dashboard");
+
+    renderUserReports();
+    const reportsCard = document.getElementById("reportsCard");
+    if (reportsCard) reportsCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderUserReports() {
+    const table = document.getElementById("reportTable");
+    if (!table) return;
+    const reports = cachedUserReports.filter(report => {
+        if (activeReportView === "pending") return report.reviewStatus === "Pending";
+        return true;
+    });
+
+    table.innerHTML = "";
+    if (!reports.length) {
+        table.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">${activeReportView === "pending" ? "There are no reports awaiting review." : "No reports found yet."}</td></tr>`;
+        return;
+    }
+
+    reports.forEach(report => {
+        let actionButton = `<button class="btn btn-sm btn-outline-dark" onclick="viewReportDetails(${Number(report.id)})"><i class="fa-regular fa-eye me-1"></i> View</button>`;
+        if (report.reviewStatus === "Rejected") {
+            actionButton += ` <button class="btn btn-sm btn-warning fw-semibold" onclick="editRejectedReport(${Number(report.id)})"><i class="fa-solid fa-pen-to-square me-1"></i>Edit & Resubmit</button>`;
+        }
+        table.innerHTML += `<tr>
+          <td><strong>${escapeHtml(report.projectTitle)}</strong><br><small class="text-muted">${escapeHtml(report.reportingDate ? new Date(report.reportingDate).toLocaleDateString() : "")}</small></td>
+          <td>${escapeHtml(report.department)}</td>
+          <td><span class="badge bg-${getStatusBadge(report.projectStatus)}">${escapeHtml(report.projectStatus)}</span></td>
+          <td><span class="badge bg-${getReviewBadge(report.reviewStatus)}">${escapeHtml(report.reviewStatus)}</span>${report.adminFeedback ? `<br><small class="text-muted">Feedback: ${escapeHtml(report.adminFeedback)}</small>` : ""}</td>
+          <td>${actionButton}</td>
+        </tr>`;
+    });
+    applyReportSearch();
+}
+
+function applyReportSearch() {
+    const value = (document.getElementById("searchInput")?.value || "").toLowerCase();
+    document.querySelectorAll("#reportTable tr").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+    });
+}
+
+async function viewReportDetails(reportId) {
+    const report = cachedUserReports.find(item => Number(item.id) === Number(reportId));
+    if (!report) return;
+    const attachment = report.attachmentFilePath
+        ? `<p><strong>Attachment:</strong> <a href="${API_URL}/uploads/${encodeURIComponent(report.attachmentFilePath)}" target="_blank" rel="noopener noreferrer">${escapeHtml(report.attachmentFileName || "Open attachment")}</a></p>`
+        : "<p><strong>Attachment:</strong> None</p>";
+    await Swal.fire({
+        title: escapeHtml(report.projectTitle),
+        width: 720,
+        confirmButtonColor: "#f47721",
+        html: `<div class="text-start report-detail-modal">
+          <p><strong>Department:</strong> ${escapeHtml(report.department)}</p>
+          <p><strong>Project status:</strong> ${escapeHtml(report.projectStatus)}</p>
+          <p><strong>Review status:</strong> ${escapeHtml(report.reviewStatus)}</p>
+          <p><strong>Importance:</strong> ${escapeHtml(report.importance || "Not specified")}</p>
+          <hr><p><strong>Summary</strong><br>${escapeHtml(report.projectSummary)}</p>
+          <p><strong>Challenges</strong><br>${escapeHtml(report.challenges)}</p>
+          <p><strong>Progress update / next steps</strong><br>${escapeHtml(report.nextSteps)}</p>
+          ${report.adminFeedback ? `<div class="alert alert-warning"><strong>Reviewer feedback</strong><br>${escapeHtml(report.adminFeedback)}</div>` : ""}
+          ${attachment}
+        </div>`
+    });
+}
+
+document.querySelectorAll(".sidebar .nav-btn[data-view]").forEach(button => {
+    button.addEventListener("click", () => setReportView(button.dataset.view));
+});
+
+const adminPanelButton = document.getElementById("adminPanelButton");
+if (adminPanelButton) {
+    const isAdmin = sessionStorage.getItem("userRole") === "Admin";
+    if (!isAdmin) adminPanelButton.classList.add("d-none");
+    adminPanelButton.addEventListener("click", () => {
+        if (sessionStorage.getItem("userRole") === "Admin") window.location.href = "admin.html";
+    });
+}
+
+// ======================================================
 // LOAD DEPARTMENT HEAD REPORTS
 // ======================================================
 
 async function loadReports() {
-
-    const table =
-        document.getElementById("reportTable");
-
-    if (!table)
-        return;
-
-    const userId =
-        sessionStorage.getItem("userId");
-
-    if (!userId)
-        return;
-
+    const table = document.getElementById("reportTable");
+    if (!table) return;
+    const userId = sessionStorage.getItem("userId");
+    if (!userId) return;
     try {
-
-        const response =
-            await fetch(`${API_URL}/Reports/user/${userId}`);
-
-        const reports =
-            await response.json();
-
-        table.innerHTML = "";
-
-        if (reports.length === 0) {
-
-            table.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center text-muted py-4">
-                        No reports submitted yet.
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-        reports.forEach(report => {
-
-            let actionButton = "";
-
-                if (report.reviewStatus === "Rejected") {
-                    actionButton = `
-                        <button
-                            class="btn btn-sm btn-warning fw-semibold"
-                            onclick="editRejectedReport(${report.id})">
-                            <i class="fa-solid fa-pen-to-square me-1"></i>
-                            Edit & Resubmit
-                        </button>
-        `           ;
-                } else if (report.reviewStatus === "Approved") {
-                    actionButton = `
-                        <span class="text-success fw-semibold">
-                            <i class="fa-solid fa-circle-check me-1"></i>
-                            Approved
-                        </span>
-                    `;
-                } else {
-                    actionButton = `
-                        <span class="text-muted">
-                            <i class="fa-solid fa-clock me-1"></i>
-                            Awaiting Review
-                        </span>
-                    `;
-                }
-
-    table.innerHTML += `
-        <tr>
-            <td>
-                <strong>${escapeHtml(report.projectTitle)}</strong>
-            </td>
-
-            <td>
-                ${escapeHtml(report.department)}
-            </td>
-
-            <td>
-                <span class="badge bg-${getStatusBadge(report.projectStatus)}">
-                    ${escapeHtml(report.projectStatus)}
-                </span>
-            </td>
-
-            <td>
-                <span class="badge bg-${getReviewBadge(report.reviewStatus)}">
-                    ${escapeHtml(report.reviewStatus)}
-                </span>
-
-                ${
-                    report.adminFeedback
-                    ? `<br>
-                       <small class="text-muted">
-                           Feedback: ${escapeHtml(report.adminFeedback)}
-                       </small>`
-                    : ""
-                }
-            </td>
-
-            <td>
-                ${actionButton}
-            </td>
-        </tr>
-    `;
-});
-
+        const response = await fetch(`${API_URL}/Reports/user/${encodeURIComponent(userId)}`);
+        if (!response.ok) throw new Error("Could not retrieve reports.");
+        cachedUserReports = await response.json();
+        if (!Array.isArray(cachedUserReports)) cachedUserReports = [];
+        renderUserReports();
+        updateStats();
     } catch (error) {
-
         console.error("Could not load reports:", error);
+        table.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Could not load reports. Please refresh the page.</td></tr>`;
     }
 }
-
 
 // ======================================================
 // DASHBOARD STATS
@@ -514,36 +526,12 @@ async function updateStats() {
     if (!submitted || !pending || !approved)
         return;
 
-    const userId =
-        sessionStorage.getItem("userId");
-
-    if (!userId)
-        return;
-
-    try {
-
-        const response =
-            await fetch(`${API_URL}/Reports/user/${userId}`);
-
-        const reports =
-            await response.json();
-
-        submitted.textContent = reports.length;
-
-        pending.textContent =
-            reports.filter(r =>
-                r.reviewStatus === "Pending"
-            ).length;
-
-        approved.textContent =
-            reports.filter(r =>
-                r.reviewStatus === "Approved"
-            ).length;
-
-    } catch (error) {
-
-        console.error(error);
-    }
+    const reports = cachedUserReports || [];
+    submitted.textContent = reports.length;
+    pending.textContent = reports.filter(r => r.reviewStatus === "Pending").length;
+    approved.textContent = reports.filter(r => r.reviewStatus === "Approved").length;
+    const departmentCount = document.getElementById("departmentCount");
+    if (departmentCount) departmentCount.textContent = reports.length ? new Set(reports.map(r => r.department).filter(Boolean)).size : "0";
 }
 
 
@@ -556,24 +544,9 @@ const searchInput =
 
 if (searchInput) {
 
-    searchInput.addEventListener("keyup", function () {
+    searchInput.addEventListener("input", function () {
 
-        const value =
-            this.value.toLowerCase();
-
-        const rows =
-            document.querySelectorAll("#reportTable tr");
-
-        rows.forEach(row => {
-
-            const text =
-                row.innerText.toLowerCase();
-
-            row.style.display =
-                text.includes(value)
-                    ? ""
-                    : "none";
-        });
+        applyReportSearch();
     });
 }
 
@@ -657,24 +630,19 @@ async function editRejectedReport(reportId) {
             return;
         }
 
+        // Return to the dashboard form before editing the rejected report.
+        setReportView("dashboard");
+
         // Fill the existing report form
         document.getElementById("reportTitle").value = report.projectTitle;
+        document.getElementById("team").value = report.department || "";
         document.getElementById("status").value = report.projectStatus;
         document.getElementById("importance").value = report.importance;
 
-        const textareas = document.querySelectorAll("#reportForm textarea");
-
-        if (textareas[0]) {
-            textareas[0].value = report.projectSummary;
-        }
-
-        if (textareas[1]) {
-            textareas[1].value = report.challenges;
-        }
-
-        if (textareas[2]) {
-            textareas[2].value = report.nextSteps;
-        }
+        document.getElementById("reportSummary").value = report.projectSummary || "";
+        document.getElementById("reportChallenges").value = report.challenges || "";
+        document.getElementById("reportProgress").value = report.nextSteps || "";
+        document.getElementById("reportDate").value = report.dueDate ? String(report.dueDate).slice(0, 10) : "";
 
         // Change button into resubmit mode
         const submitButton = document.getElementById("submitBtn");

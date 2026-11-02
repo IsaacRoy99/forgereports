@@ -583,3 +583,32 @@ footer {
         animation-iteration-count: 1 !important;
     }
 }
+
+
+/* FORGE REPORTS wordmark and dashboard navigation polish */
+.brand-reports {
+    display: inline-block;
+    padding: 7px 12px;
+    border-left: 4px solid var(--forge-orange);
+    color: var(--forge-orange);
+    font-size: clamp(1rem, 2vw, 1.45rem);
+    font-weight: 850;
+    letter-spacing: .22em;
+}
+.brand-reports-small { color: var(--forge-orange); letter-spacing: .12em; font-weight: 850; }
+.brand-lockup { display: flex; align-items: center; gap: 12px; color: #fff; font-size: .85rem; font-weight: 800; letter-spacing: .1em; }
+.brand-lockup strong { color: var(--forge-orange); }
+.sidebar .nav-btn { cursor: pointer; }
+.sidebar .nav-btn:focus-visible { outline: 3px solid rgba(244,119,33,.35); outline-offset: 2px; }
+.report-detail-modal p { margin-bottom: .8rem; white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 991px) {
+  .sidebar { min-height: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .sidebar h5 { grid-column: 1 / -1; margin: 12px 8px 4px !important; }
+  .sidebar .nav-btn { margin-bottom: 0; padding: 11px 10px; }
+  .brand-lockup img { max-height: 48px; }
+}
+@media (max-width: 575px) {
+  .sidebar { grid-template-columns: 1fr 1fr; padding: 14px !important; }
+  #searchInput { width: 55% !important; }
+  .hero-section { padding: 38px 20px; }
+}

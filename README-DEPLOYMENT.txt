@@ -49,7 +49,11 @@ DATABASE CREDENTIAL WARNING
 The uploaded ZIP contained a live-looking SQL Server connection string with a password in appsettings.json. That old configuration is not included in this deployment package. Rotate that SQL Server password because it was present in the shared ZIP/repository.
 
 CURRENT SCOPE / LIMITATIONS
-- Signup page is retained as in the source project, but the original backend did not implement account creation; demo users are pre-seeded.
-- Passwords are intentionally not validated in this demo build, matching the source project's current API behavior.
-- Existing reports from the old SQL Server database are not automatically copied. The new Netlify database starts with the seeded departments and users; new demo reports are saved there.
-- This package has been source-checked locally, but a live Netlify deployment/database cannot be verified until it is connected to your Netlify account and deployed.
+- Dashboard navigation is wired: Dashboard, My Reports, Sent Reports, All Reports, Pending Reviews and (for administrators) Admin Panel.
+- Department users can view their own reports, filter pending reviews, open report details, see reviewer feedback and resubmit rejected reports.
+- Administrators can search/filter all reports, open report details and approve/reject reports with feedback.
+- The FORGE REPORTS wordmark has been added alongside the existing Forge logo; the original logo artwork and colour identity are retained.
+- Signup page is retained in the source project, but account creation is not implemented; use the pre-seeded demo users.
+- Passwords are intentionally not validated in this demo build, matching the source project's current API behavior. The browser-side role checks are not a security boundary and API routes are not fully authorized. This remains a demonstration build only.
+- Existing reports from the old SQL Server database are not automatically copied. The Netlify database contains its own seeded departments and users; new demo reports are saved there.
+- The files have been syntax-checked locally. This does not replace testing the deployed API, database and attachment storage after GitHub deploys the update.
