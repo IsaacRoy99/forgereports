@@ -8,7 +8,7 @@ WHAT THIS PACKAGE CONTAINS
 - netlify.toml: Netlify build and API routing configuration
 
 IMPORTANT PLATFORM REQUIREMENT
-This package uses Netlify Database (managed PostgreSQL) and Netlify Blobs (persistent attachments).
+This package uses Netlify Database (managed PostgreSQL) and Netlify Blobs (persistent attachments). The database dependency is pinned to the published 2.x line (`@netlify/database` ^2.0.1).
 Netlify Database is currently available on Netlify credit-based plans. Before deploying, open the Netlify project and confirm that Data & Storage > Database is available for the account. When Netlify detects @netlify/database and the migration folder, it provisions the database and applies the migration as part of deployment. If the account cannot create a Netlify Database, deployment will need a supported external PostgreSQL database instead.
 
 DEPLOY
