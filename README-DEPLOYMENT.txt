@@ -1,0 +1,55 @@
+FORGE REPORT SYSTEM — NETLIFY DEPLOYMENT PACKAGE
+================================================
+
+WHAT THIS PACKAGE CONTAINS
+- public/: the website pages, styles, logo and browser JavaScript
+- netlify/functions/api.mjs: the hosted API (login, reports, review, resubmission, attachments)
+- netlify/database/migrations/: creates the Postgres database tables and seeds the existing demo users/departments
+- netlify.toml: Netlify build and API routing configuration
+
+IMPORTANT PLATFORM REQUIREMENT
+This package uses Netlify Database (managed PostgreSQL) and Netlify Blobs (persistent attachments).
+Netlify Database is currently available on Netlify credit-based plans. Before deploying, open the Netlify project and confirm that Data & Storage > Database is available for the account. When Netlify detects @netlify/database and the migration folder, it provisions the database and applies the migration as part of deployment. If the account cannot create a Netlify Database, deployment will need a supported external PostgreSQL database instead.
+
+DEPLOY
+1. Extract this ZIP. The folder you connect to Netlify/GitHub is the folder containing netlify.toml, package.json, public/, and netlify/.
+2. Create a NEW Netlify site or connect a NEW GitHub repository for this package. Do not overwrite the existing GitHub project/site while testing.
+3. In Netlify build settings, use the default settings from netlify.toml. Publish directory is public; functions directory is netlify/functions.
+4. Deploy. Netlify should detect @netlify/database, create the database and apply the SQL migration. Check the deploy log for migration success.
+5. After deployment, open https://YOUR-SITE.netlify.app/api/health. Expected response includes status "ok" and database "connected".
+6. Open /login.html and test the seeded users.
+
+DEMO LOGIN BEHAVIOR
+The source project did not validate passwords in its login API. This package intentionally preserves that demo behavior: enter a seeded email address; the password field is required by the page but is not checked by the API. This is ONLY suitable for a controlled demonstration. Do not use this build with real confidential company information or expose it publicly. Before production use, implement proper password hashing, authentication tokens, authorization on every API route, and audit logging.
+
+SEEDED USER EMAILS (copied from the source project's seed data)
+jane@forgeacademy.co.za
+disebo@forgeacademy.co.za
+keegan@forgeacademy.co.za
+Ali@forgeacademy.co.za
+lilian@forgeacademy.co.za
+tariq@forgeacademy.co.za
+craig@forgeacademy.co.za
+lauren@forgeacademy.co.za
+kishanry@forgeacademy.co.za
+linda@forgeacademy.co.za
+francis@forgeacademy.co.za
+wayne@forgeacademy.co.za
+charmain@forgeacademy.co.za
+lezel@forgeacademy.co.za
+jabu@forgeacademy.co.za
+michael@forgeacademy.co.za
+renoo@forgeacademy.co.za
+kayleen@forgeacademy.co.za
+des@forgeacademy.co.za
+olga@forgeacademy.co.za
+admin@forgeacademy.co.za
+
+DATABASE CREDENTIAL WARNING
+The uploaded ZIP contained a live-looking SQL Server connection string with a password in appsettings.json. That old configuration is not included in this deployment package. Rotate that SQL Server password because it was present in the shared ZIP/repository.
+
+CURRENT SCOPE / LIMITATIONS
+- Signup page is retained as in the source project, but the original backend did not implement account creation; demo users are pre-seeded.
+- Passwords are intentionally not validated in this demo build, matching the source project's current API behavior.
+- Existing reports from the old SQL Server database are not automatically copied. The new Netlify database starts with the seeded departments and users; new demo reports are saved there.
+- This package has been source-checked locally, but a live Netlify deployment/database cannot be verified until it is connected to your Netlify account and deployed.
